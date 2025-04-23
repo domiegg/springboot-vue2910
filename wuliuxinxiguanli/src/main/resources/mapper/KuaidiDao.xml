@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.KuaidiDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.dingdan_id as dingdanId
+        ,a.kuaidi_name as kuaidiName
+        ,a.kuaidi_danhao as kuaidiDanhao
+        ,a.kuaidi_types as kuaidiTypes
+        ,a.kuaidi_text as kuaidiText
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.KuaidiView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,dingdan.dingdan_uuid_number as dingdanUuidNumber
+        ,dingdan.shangpin_name as shangpinName
+        ,dingdan.shangpin_types as shangpinTypes
+        ,dingdan.yunshu_content as yunshuContent
+        ,dingdan.yonghu_id as dingdanYonghuId
+        ,dingdan.dingdan_types as dingdanTypes
+        ,dingdan.dingdan_delete as dingdanDelete
+
+        FROM kuaidi  a
+        left JOIN dingdan dingdan ON a.dingdan_id = dingdan.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.dingdanId != null and params.dingdanId != ''">
+                and (
+                    a.dingdan_id = #{params.dingdanId}
+                )
+            </if>
+            <if test=" params.kuaidiName != '' and params.kuaidiName != null and params.kuaidiName != 'null' ">
+                and a.kuaidi_name like CONCAT('%',#{params.kuaidiName},'%')
+            </if>
+            <if test=" params.kuaidiDanhao != '' and params.kuaidiDanhao != null and params.kuaidiDanhao != 'null' ">
+                and a.kuaidi_danhao like CONCAT('%',#{params.kuaidiDanhao},'%')
+            </if>
+            <if test="params.kuaidiTypes != null and params.kuaidiTypes != ''">
+                and a.kuaidi_types = #{params.kuaidiTypes}
+            </if>
+            <if test=" params.kuaidiText != '' and params.kuaidiText != null and params.kuaidiText != 'null' ">
+                and a.kuaidi_text like CONCAT('%',#{params.kuaidiText},'%')
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+                <!-- 判断订单的id不为空 -->
+            <if test=" params.dingdanIdNotNull != '' and params.dingdanIdNotNull != null and params.dingdanIdNotNull != 'null' ">
+                and a.dingdan_id IS NOT NULL
+            </if>
+            <if test=" params.dingdanUuidNumber != '' and params.dingdanUuidNumber != null and params.dingdanUuidNumber != 'null' ">
+                and dingdan.dingdan_uuid_number like CONCAT('%',#{params.dingdanUuidNumber},'%')
+            </if>
+            <if test=" params.shangpinName != '' and params.shangpinName != null and params.shangpinName != 'null' ">
+                and dingdan.shangpin_name like CONCAT('%',#{params.shangpinName},'%')
+            </if>
+            <if test="params.shangpinTypes != null  and params.shangpinTypes != ''">
+                and dingdan.shangpin_types = #{params.shangpinTypes}
+            </if>
+
+            <if test=" params.yunshuContent != '' and params.yunshuContent != null and params.yunshuContent != 'null' ">
+                and dingdan.yunshu_content like CONCAT('%',#{params.yunshuContent},'%')
+            </if>
+            <if test="params.fahuoaddressId != null  and params.fahuoaddressId != ''">
+                and dingdan.fahuoaddress_id = #{params.fahuoaddressId}
+            </if>
+            <if test="params.shouhuoaddressId != null  and params.shouhuoaddressId != ''">
+                and dingdan.shouhuoaddress_id = #{params.shouhuoaddressId}
+            </if>
+            <if test="params.yunhuoluxianId != null  and params.yunhuoluxianId != ''">
+                and dingdan.yunhuoluxian_id = #{params.yunhuoluxianId}
+            </if>
+            <if test="params.dingdanTypes != null  and params.dingdanTypes != ''">
+                and dingdan.dingdan_types = #{params.dingdanTypes}
+            </if>
+
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(dingdan.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(dingdan.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+            <if test="params.dingdanDeleteStart != null  and params.dingdanDeleteStart != '' ">
+                <![CDATA[  and dingdan.dingdan_delete >= #{params.dingdanDeleteStart}   ]]>
+            </if>
+            <if test="params.dingdanDeleteEnd != null  and params.dingdanDeleteEnd != '' ">
+                <![CDATA[  and dingdan.dingdan_delete <= #{params.dingdanDeleteEnd}   ]]>
+            </if>
+            <if test="params.dingdanDelete != null  and params.dingdanDelete != '' ">
+                and dingdan.dingdan_delete = #{params.dingdanDelete}
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
